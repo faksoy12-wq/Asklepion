@@ -190,6 +190,37 @@ const Icons = {
       <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
     </svg>
   ),
+  BarChart3: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+      <path d="M7 16h.01M11 11h.01M15 16h.01M19 6h.01" />
+      <path d="M7 16v-3M11 11v-3M15 16v-8M19 6v-3" />
+    </svg>
+  ),
+  Footprints: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z" />
+      <path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z" />
+    </svg>
+  ),
+  Timer: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="10" x2="14" y1="2" y2="2" />
+      <line x1="12" x2="15" y1="14" y2="11" />
+      <circle cx="12" cy="14" r="8" />
+    </svg>
+  ),
+  TrendingUp: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </svg>
+  ),
+  Zap: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+    </svg>
+  ),
 };
 
 // ─── UTILITY FUNCTIONS ────────────────────────────────
@@ -1560,11 +1591,351 @@ function SettingsPage({ onEditProfile }) {
   );
 }
 
+// ─── MINI SPARKLINE ───────────────────────────────────
+function MiniSparkline({ data, color = '#10b981', height = 40 }) {
+  if (!data || data.length < 2) return null;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const w = 120;
+  const h = height;
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ opacity: 0.5 }}>
+      <defs>
+        <linearGradient id={`spark-${color.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <polygon
+        points={`0,${h} ${points} ${w},${h}`}
+        fill={`url(#spark-${color.replace('#','')})`}
+      />
+    </svg>
+  );
+}
+
+// ─── STATS PAGE ───────────────────────────────────────
+function StatsPage() {
+  const { data } = useApp();
+  const [examDuration, setExamDuration] = useState(3);
+
+  // ── Core Calculations ──
+  const totalPatients = useMemo(() => {
+    let total = 0;
+    data.careerStops.forEach(stop => {
+      Object.values(stop.monthlyPatients || {}).forEach(v => {
+        total += Number(v) || 0;
+      });
+    });
+    return total;
+  }, [data]);
+
+  // ── Time Alchemy ──
+  const totalHours = Math.round(totalPatients * examDuration / 60);
+  const totalDays = (totalHours / 24).toFixed(1);
+  const filmCount = Math.round(totalHours / 2.5);
+  const worldTours = (totalHours / 48).toFixed(1);
+
+  // ── Clinical Marathon ──
+  const totalSteps = totalPatients * 10;
+  const totalKm = (totalSteps * 0.75 / 1000).toFixed(1);
+  const istanbulLength = 150; // km
+  const istanbulRoundTrips = (parseFloat(totalKm) / (istanbulLength * 2)).toFixed(1);
+
+  // ── Last 6 months sparkline data ──
+  const last6Months = useMemo(() => {
+    const now = new Date();
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      months.push(key);
+    }
+    return months.map(key => {
+      let total = 0;
+      data.careerStops.forEach(stop => {
+        total += Number(stop.monthlyPatients?.[key]) || 0;
+      });
+      return total;
+    });
+  }, [data]);
+
+  // ── Stop Comparison (Klinik Tempo) ──
+  const stopStats = useMemo(() => {
+    return data.careerStops.map(stop => {
+      const entries = Object.entries(stop.monthlyPatients || {});
+      const totalP = entries.reduce((sum, [, v]) => sum + (Number(v) || 0), 0);
+      const monthCount = entries.length || 1;
+      const avg = Math.round(totalP / monthCount);
+      return {
+        id: stop.id,
+        name: stop.institution,
+        department: stop.department,
+        role: stop.role,
+        total: totalP,
+        avg,
+        months: monthCount,
+        isActive: !stop.endDate,
+      };
+    });
+  }, [data]);
+
+  const busiestStop = stopStats.reduce((a, b) => (a.avg > b.avg ? a : b), stopStats[0]);
+  const calmestStop = stopStats.reduce((a, b) => (a.avg < b.avg ? a : b), stopStats[0]);
+  const intensityDiff = busiestStop && calmestStop && calmestStop.avg > 0
+    ? Math.round(((busiestStop.avg - calmestStop.avg) / busiestStop.avg) * 100)
+    : 0;
+
+  // ── Peak Month Analysis (Kariyer Evrimi) ──
+  const peakMonthAnalysis = useMemo(() => {
+    const monthBuckets = {};
+    data.careerStops.forEach(stop => {
+      Object.entries(stop.monthlyPatients || {}).forEach(([key, val]) => {
+        const m = parseInt(key.split('-')[1]);
+        if (!monthBuckets[m]) monthBuckets[m] = [];
+        monthBuckets[m].push(Number(val) || 0);
+      });
+    });
+
+    let peakMonth = null;
+    let peakAvg = 0;
+    Object.entries(monthBuckets).forEach(([m, vals]) => {
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      if (avg > peakAvg) {
+        peakAvg = avg;
+        peakMonth = parseInt(m);
+      }
+    });
+
+    const seasons = { 12: 'Kış', 1: 'Kış', 2: 'Kış', 3: 'İlkbahar', 4: 'İlkbahar', 5: 'İlkbahar', 6: 'Yaz', 7: 'Yaz', 8: 'Yaz', 9: 'Sonbahar', 10: 'Sonbahar', 11: 'Sonbahar' };
+    return {
+      monthName: peakMonth ? MONTHS_TR[peakMonth - 1] : '—',
+      season: peakMonth ? seasons[peakMonth] : '',
+      avg: Math.round(peakAvg),
+    };
+  }, [data]);
+
+  // ── Year-over-Year comparison ──
+  const yoyComparison = useMemo(() => {
+    const now = new Date();
+    const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const lastYearKey = `${now.getFullYear() - 1}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    let currentVal = 0, lastYearVal = 0;
+    data.careerStops.forEach(stop => {
+      currentVal += Number(stop.monthlyPatients?.[currentKey]) || 0;
+      lastYearVal += Number(stop.monthlyPatients?.[lastYearKey]) || 0;
+    });
+
+    const diff = lastYearVal > 0 ? Math.round(((currentVal - lastYearVal) / lastYearVal) * 100) : null;
+    return { current: currentVal, lastYear: lastYearVal, diff };
+  }, [data]);
+
+  if (totalPatients === 0) {
+    return (
+      <div className="stats-page">
+        <div className="stats-page-header">
+          <div className="stats-page-title">İstatistikler</div>
+          <div className="stats-page-subtitle">Zamanın Simyası</div>
+        </div>
+        <div className="stats-empty">
+          <div className="stats-empty-icon"><Icons.BarChart3 /></div>
+          <p>Henüz hasta verisi girilmedi. Veri girmeye başladığınızda kariyer hikayeniz burada canlanacak.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="stats-page">
+      <div className="stats-page-header">
+        <div className="stats-page-title">İstatistikler</div>
+        <div className="stats-page-subtitle">Zamanın Simyası</div>
+      </div>
+
+      {/* ─── KART 1: ZAMANIN SİMYASI ─── */}
+      <div className="stats-hero-card">
+        <div className="stats-card-glow stats-glow-emerald" />
+        <div className="stats-card-icon"><Icons.Timer /></div>
+        <div className="stats-card-section-title">Zamanın Simyası</div>
+
+        <div className="stats-hero-metrics">
+          <div className="stats-metric-big">
+            <span className="stats-metric-number emerald"><NumberTicker value={totalHours} /></span>
+            <span className="stats-metric-unit">saat</span>
+          </div>
+        </div>
+
+        <p className="stats-narrative">
+          Klinik pratiğinizde toplamda <strong className="text-emerald">{totalHours.toLocaleString('tr-TR')} saat</strong> boyunca
+          kesintisiz şifa dağıttınız. Bu, ömrünüzün <strong className="text-gold">{totalDays} gününü</strong> sadece
+          başkalarının sağlığına adadığınız anlamına geliyor.
+        </p>
+
+        <p className="stats-narrative" style={{ marginTop: 'var(--space-md)' }}>
+          Hastalarınızı <strong className="text-emerald">{totalHours.toLocaleString('tr-TR')} saat</strong> boyunca
+          can kulağıyla dinlediniz. Bu süre, <strong className="text-gold">{filmCount.toLocaleString('tr-TR')} uzun metrajlı film</strong> izlemeye
+          veya dünyayı uçakla <strong className="text-gold">{worldTours} kez</strong> turlamaya eşdeğer.
+        </p>
+
+        <div className="stats-slider-container">
+          <div className="stats-slider-header">
+            <span className="stats-slider-label">Ortalama Muayene Süresi</span>
+            <span className="stats-slider-value">{examDuration} dk</span>
+          </div>
+          <input
+            type="range"
+            className="stats-slider"
+            min="1"
+            max="20"
+            value={examDuration}
+            onChange={e => setExamDuration(Number(e.target.value))}
+          />
+          <div className="stats-slider-range">
+            <span>1 dk</span>
+            <span>20 dk</span>
+          </div>
+        </div>
+
+        <div className="stats-quote">
+          "Zaman, bir hekimin hastasına sunduğu en kıymetli ilaçtır."
+        </div>
+      </div>
+
+      {/* ─── KART 2: KLİNİK MARATON ─── */}
+      <div className="stats-bento-card">
+        <div className="stats-card-glow stats-glow-gold" />
+        <div className="stats-card-icon"><Icons.Footprints /></div>
+        <div className="stats-card-section-title">Klinik Maraton</div>
+
+        <div className="stats-hero-metrics">
+          <div className="stats-metric-big">
+            <span className="stats-metric-number gold"><NumberTicker value={parseFloat(totalKm)} /></span>
+            <span className="stats-metric-unit">km</span>
+          </div>
+        </div>
+
+        <p className="stats-narrative">
+          Şifa dağıtırken toplamda <strong className="text-gold">{parseFloat(totalKm).toLocaleString('tr-TR')} km</strong> yol kat ettiniz.
+        </p>
+
+        <div className="stats-comparison-badge">
+          <Icons.MapPin />
+          <span>Sadece bu adımlarla İstanbul'un bir ucundan diğerine <strong>{istanbulRoundTrips} kez</strong> gidip gelebilirdiniz.</span>
+        </div>
+
+        <div className="stats-sparkline-row">
+          <MiniSparkline data={last6Months} color="#D4AF37" />
+          <span className="stats-sparkline-label">Son 6 ay trendi</span>
+        </div>
+
+        <div className="stats-quote">
+          "Her adım bir teşhis, her kilometre binlerce şifa..."
+        </div>
+      </div>
+
+      {/* ─── KART 3: KLİNİK TEMPO ─── */}
+      {stopStats.length > 0 && (
+        <div className="stats-bento-card">
+          <div className="stats-card-glow stats-glow-emerald" />
+          <div className="stats-card-icon"><Icons.Zap /></div>
+          <div className="stats-card-section-title">Klinik Tempo</div>
+
+          <div className="stats-tempo-table">
+            {stopStats.map(stop => (
+              <div key={stop.id} className={`stats-tempo-row ${stop.isActive ? 'active' : ''}`}>
+                <div className="stats-tempo-name">
+                  <span className="stats-tempo-institution">{stop.name}</span>
+                  {stop.department && <span className="stats-tempo-dept">{stop.department}</span>}
+                </div>
+                <div className="stats-tempo-stats">
+                  <div className="stats-tempo-avg">
+                    <span className="stats-tempo-avg-value">{stop.avg}</span>
+                    <span className="stats-tempo-avg-label">ort/ay</span>
+                  </div>
+                  <div className="stats-tempo-total">
+                    <span className="stats-tempo-total-value">{stop.total.toLocaleString('tr-TR')}</span>
+                    <span className="stats-tempo-total-label">toplam</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {stopStats.length >= 2 && busiestStop && calmestStop && intensityDiff > 0 && (
+            <div className="stats-insight">
+              <Icons.TrendingUp />
+              <span>
+                <strong>{calmestStop.name}</strong>, <strong>{busiestStop.name}</strong>'e göre <span className="text-emerald">%{intensityDiff} daha düşük yoğunluk</span>, daha derin şifa.
+              </span>
+            </div>
+          )}
+
+          <div className="stats-quote">
+            "Tempo değişir, şifaya olan bağlılık baki kalır."
+          </div>
+        </div>
+      )}
+
+      {/* ─── KART 4: KARİYER EVRİMİ ─── */}
+      <div className="stats-bento-card">
+        <div className="stats-card-glow stats-glow-gold" />
+        <div className="stats-card-icon"><Icons.TrendingUp /></div>
+        <div className="stats-card-section-title">Kariyer Evrimi</div>
+
+        <div className="stats-evolution-grid">
+          <div className="stats-evo-item">
+            <div className="stats-evo-label">En Yoğun Ay</div>
+            <div className="stats-evo-value gold">{peakMonthAnalysis.monthName}</div>
+            <div className="stats-evo-sub">{peakMonthAnalysis.season} Sezonu • Ort. {peakMonthAnalysis.avg} hasta</div>
+          </div>
+
+          {yoyComparison.diff !== null && (
+            <div className="stats-evo-item">
+              <div className="stats-evo-label">Geçen Yıla Göre</div>
+              <div className={`stats-evo-value ${yoyComparison.diff >= 0 ? 'emerald' : 'gold'}`}>
+                {yoyComparison.diff >= 0 ? '+' : ''}{yoyComparison.diff}%
+              </div>
+              <div className="stats-evo-sub">{MONTHS_TR[new Date().getMonth()]} ayı kıyası</div>
+            </div>
+          )}
+        </div>
+
+        <div className="stats-sparkline-row" style={{ marginTop: 'var(--space-lg)' }}>
+          <MiniSparkline data={last6Months} color="#10b981" height={50} />
+          <span className="stats-sparkline-label">6 aylık trend</span>
+        </div>
+
+        <div className="stats-quote">
+          "Bilgi birikir, tecrübe ise zamanla demlenir."
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
 // ─── BOTTOM NAV ───────────────────────────────────────
 function BottomNav({ activeTab, onTabChange }) {
   const tabs = [
     { id: 'dashboard', label: 'Anasayfa', icon: Icons.Home },
     { id: 'career', label: 'Kariyer', icon: Icons.Chart },
+    { id: 'stats', label: 'İstatistik', icon: Icons.BarChart3 },
     { id: 'settings', label: 'Ayarlar', icon: Icons.Settings },
   ];
 
@@ -1605,6 +1976,7 @@ function App() {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
       case 'career': return <CareerPage />;
+      case 'stats': return <StatsPage />;
       case 'settings': return <SettingsPage onEditProfile={() => setSheet('profileEdit')} />;
       default: return <Dashboard />;
     }
@@ -1615,8 +1987,8 @@ function App() {
       <div className="app-layout">
         {renderPage()}
 
-        {/* FAB — only on dashboard and career */}
-        {(activeTab === 'dashboard' || activeTab === 'career') && (
+        {/* FAB — on dashboard, career, and stats */}
+        {(activeTab === 'dashboard' || activeTab === 'career' || activeTab === 'stats') && (
           <button className="fab" onClick={() => setSheet('options')}>
             <Icons.Plus />
           </button>

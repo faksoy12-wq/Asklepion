@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Asklepion PWA İkon Oluşturucu</title>
+  <style>
+    body { background: #131620; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
+    button { background: #D4AF37; color: black; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #FDE68A; }
+  </style>
+</head>
+<body>
+  <h1>Asklepion İkon Üretici</h1>
+  <p>iOS ve Android PWA uyumluluğu için gerekli olan ikonları (PNG) indirmek üzere aşağıdaki butona tıklayın.</p>
+  <button id="downloadBtn">İkonları İndir (192, 512, 180 Apple)</button>
+
+  <script>
+    function downloadIconAsPng(size, filename) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      
+      // Arka plan
+      ctx.fillStyle = '#131620';
+      ctx.fillRect(0, 0, size, size);
+
+      // Çözünürlüğe göre ölçekleme
+      ctx.scale(size / 100, size / 100);
+
+      // Altın Degrade (Gradient)
+      const grad = ctx.createLinearGradient(0, 0, 100, 100);
+      grad.addColorStop(0, '#FDE68A');
+      grad.addColorStop(0.5, '#D4AF37');
+      grad.addColorStop(1, '#B45309');
+
+      // Parlama Efekti (Glow)
+      ctx.shadowColor = '#D4AF37';
+      ctx.shadowBlur = 4; // Orantılı glow
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
+      ctx.fillStyle = grad;
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 5.5;
+      ctx.lineCap = 'round';
+
+      // Asa (Staff)
+      ctx.beginPath();
+      ctx.rect(47, 15, 6, 75);
+      ctx.fill();
+
+      // Topuzlar (Caps)
+      // roundRect yerine daha güvenli olan standart çizim kullanıyoruz
+      const radius = 2;
+      // Üst topuz
+      ctx.beginPath();
+      ctx.moveTo(43 + radius, 10);
+      ctx.arcTo(57, 10, 57, 15, radius);
+      ctx.arcTo(57, 15, 43, 15, radius);
+      ctx.arcTo(43, 15, 43, 10, radius);
+      ctx.arcTo(43, 10, 57, 10, radius);
+      ctx.fill();
+
+      // Alt topuz
+      ctx.beginPath();
+      ctx.moveTo(44 + radius, 88);
+      ctx.arcTo(56, 88, 56, 92, radius);
+      ctx.arcTo(56, 92, 44, 92, radius);
+      ctx.arcTo(44, 92, 44, 88, radius);
+      ctx.arcTo(44, 88, 56, 88, radius);
+      ctx.fill();
+
+      // Yılan (Snake - Bezier Curve)
+      ctx.beginPath();
+      ctx.moveTo(50, 82);
+      ctx.bezierCurveTo(75, 75, 75, 55, 50, 50);
+      ctx.bezierCurveTo(25, 45, 25, 25, 50, 20);
+      ctx.bezierCurveTo(65, 18, 70, 15, 65, 8);
+      ctx.stroke();
+
+      // 2 kez glow işlemi yaparak efekti pekiştirelim
+      ctx.stroke();
+
+      const pngUrl = canvas.toDataURL('image/png', 1.0);
+      const a = document.createElement('a');
+      a.href = pngUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      downloadIconAsPng(192, 'icon-192.png');
+      setTimeout(() => downloadIconAsPng(512, 'icon-512.png'), 500);
+      setTimeout(() => downloadIconAsPng(180, 'apple-touch-icon.png'), 1000);
+      alert("Altın tasarımlı ikonlar indiriliyor... Lütfen tarayıcının indirme iznine onay verin. İndikten sonra PNG dosyalarını projenizin dizinine atıp Github'a yükleyin.");
+    });
+  </script>
+</body>
+</html>
