@@ -10,7 +10,7 @@
     <meta name="description" content="Asklepion — Hekim Kariyer Günlüğü. Mesleki yolculuğunuzu, hasta sayılarınızı ve kariyer dönüm noktalarınızı takip edin.">
     <title>Asklepion — Hekim Kariyer Günlüğü</title>
     <link rel="manifest" href="manifest.json?v=2">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚕️</text></svg>">
+    <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -681,8 +681,8 @@ function OnboardingWizard() {
               Devam
             </button>
           ) : (
-            <button className="btn-primary" onClick={handleFinish}>
-              ✨ Başlayalım
+            <button className="btn-primary" onClick={handleFinish} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <Icons.Check /> Başlayalım
             </button>
           )}
         </div>
@@ -1091,8 +1091,9 @@ function PatientEntrySheet({ onClose }) {
         <div className="sheet-title">Hasta Sayısı Gir</div>
 
         {targetStop && (
-          <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-lg)' }}>
-            <span style={{ color: 'var(--gold-400)' }}>⚑</span> {targetStop.institution}
+          <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-lg)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ color: 'var(--gold-400)', display: 'flex' }}><Icons.MapPin /></span>
+            {targetStop.institution}
             {targetStop.department ? ` — ${targetStop.department}` : ''}
           </div>
         )}
