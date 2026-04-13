@@ -1495,7 +1495,7 @@ button {
 .text-emerald { color: #10b981; }
 
 .stats-page {
-  padding: var(--space-xl) var(--space-base) calc(var(--space-base) + 100px);
+  padding: var(--space-xl) var(--space-base) var(--space-base);
   max-width: var(--max-width);
   width: 100%;
   margin: 0 auto;
