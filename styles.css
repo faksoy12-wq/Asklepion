@@ -108,6 +108,8 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
+  background: #090B10;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -315,15 +317,17 @@ button {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--space-md);
   line-height: 1.4;
+  text-align: center;
 }
 
 .step-subtitle {
   font-size: 0.875rem;
   color: var(--text-secondary);
-  margin-top: -12px;
+  margin-top: -8px;
   margin-bottom: var(--space-xl);
+  text-align: center;
 }
 
 /* Form Elements */
@@ -351,6 +355,9 @@ button {
   font-size: 1rem;
   transition: all var(--duration-base) var(--ease-out);
   outline: none;
+  text-align: left;
+  -webkit-appearance: none;
+  font-family: var(--font-sans);
 }
 
 .form-input:focus {
