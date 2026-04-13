@@ -1719,6 +1719,10 @@ function StatsPage() {
   const nolanCount = (filmCount / 12).toFixed(1);
   const moonTrips = (totalHours / 72).toFixed(1);
 
+  // ── Biological Rhythm ──
+  const totalMinutes = totalPatients * examDuration;
+  const totalHeartbeats = totalMinutes * 72;
+
   // ── Clinical Marathon ──
   const stepsPerPatient = Math.round(examDuration * 3.33);
   const totalSteps = totalPatients * stepsPerPatient;
@@ -1909,30 +1913,25 @@ function StatsPage() {
         </div>
       </div>
 
-      {/* ─── KART 4: GLOBAL KÂŞİF ─── */}
+      {/* ─── KART 4: BİYOLOJİK RİTİM ─── */}
       <div className="stats-bento-card">
         <div className="stats-card-glow stats-glow-gold" />
-        <div className="stats-card-icon"><Icons.Plane /></div>
-        <div className="stats-card-section-title">Global Kâşif</div>
+        <div className="stats-card-icon"><Icons.Heart /></div>
+        <div className="stats-card-section-title">3. MODÜL: BİYOLOJİK RİTİM (NEW)</div>
 
         <div className="stats-hero-metrics">
           <div className="stats-metric-big">
-            <span className="stats-metric-number gold">{worldTours}</span>
-            <span className="stats-metric-unit">tur</span>
+            <span className="stats-metric-number gold">{totalHeartbeats.toLocaleString('tr-TR')}</span>
+            <span className="stats-metric-unit">atış</span>
           </div>
         </div>
 
         <p className="stats-narrative">
-          Bu mesai süresiyle dünyayı uçakla <strong className="text-gold">{worldTours} kez</strong> tam tur dönebilirdiniz.
+          Siz başkalarına şifa dağıtırken kendi kalbiniz tam <strong className="text-gold">{totalHeartbeats.toLocaleString('tr-TR')}</strong> kez attı. Her bir atış, muayene odasında yeni bir hikayeye tanıklık etti.
         </p>
 
-        <div className="stats-comparison-badge">
-          <Icons.MapPin />
-          <span>Bu süreyle Dünya'dan Ay'a <strong>{moonTrips} kez</strong> uçak hızında seyahat edebilirdiniz.</span>
-        </div>
-
         <div className="stats-quote">
-          "Emeğiniz dünyayı çepeçevre sarar."
+          "Kendi ritmimizden verdiğimiz her saniye, bir başkasının hayat ritmini düzenlemek içindir."
         </div>
       </div>
 
@@ -1950,7 +1949,7 @@ function StatsPage() {
         </div>
 
         <p className="stats-narrative">
-          Şifa dağıtırken toplamda <strong className="text-gold">{parseFloat(totalKm).toLocaleString('tr-TR')} km</strong> yol kat ettiniz.
+          Hastalara şifa dağıtırken onlara attığınız adımlarla toplamda <strong className="text-gold">{parseFloat(totalKm).toLocaleString('tr-TR')} km</strong> yol kat ettiniz.
         </p>
 
         <div className="stats-comparison-badge">
