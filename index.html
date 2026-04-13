@@ -1802,13 +1802,13 @@ function StatsPage() {
             type="range"
             className="stats-slider"
             min="1"
-            max="20"
+            max="10"
             value={examDuration}
             onChange={e => setExamDuration(Number(e.target.value))}
           />
           <div className="stats-slider-range">
             <span>1 dk</span>
-            <span>20 dk</span>
+            <span>10 dk</span>
           </div>
         </div>
 
@@ -1881,7 +1881,7 @@ function StatsPage() {
             <div className="stats-insight">
               <Icons.TrendingUp />
               <span>
-                <strong>{calmestStop.name}</strong>, <strong>{busiestStop.name}</strong>'e göre <span className="text-emerald">%{intensityDiff} daha düşük yoğunluk</span>, daha derin şifa.
+                <strong>{calmestStop.name}</strong>, <strong>{busiestStop.name}</strong>'e göre <span className="text-emerald">%{intensityDiff} daha düşük yoğunlukta.</span>
               </span>
             </div>
           )}
