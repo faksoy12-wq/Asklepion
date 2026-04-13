@@ -1367,10 +1367,15 @@ function ProfileEditSheet({ onClose }) {
   const [toast, setToast] = useState(false);
 
   function handleSave() {
+    let finalStops = [...stops];
+    if (finalStops.length > 0 && !finalStops.some(s => !s.endDate)) {
+      finalStops[finalStops.length - 1].endDate = null;
+    }
+
     const newData = {
       ...data,
       physician: { ...data.physician, name: profileName, title: profileTitle },
-      careerStops: stops,
+      careerStops: finalStops,
     };
     setData(newData);
     saveData(newData);
@@ -1439,8 +1444,26 @@ function ProfileEditSheet({ onClose }) {
                   <input className="form-input" type="date" value={stop.startDate} onChange={e => updateStop(stop.id, 'startDate', e.target.value)} />
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Bitiş</label>
-                  <input className="form-input" type="date" value={stop.endDate || ''} onChange={e => updateStop(stop.id, 'endDate', e.target.value || null)} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <label className="form-label" style={{ marginBottom: 0 }}>Bitiş</label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.625rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={!stop.endDate}
+                        onChange={(e) => updateStop(stop.id, 'endDate', e.target.checked ? null : stop.startDate)}
+                        style={{ accentColor: 'var(--gold-400)', width: '12px', height: '12px' }}
+                      />
+                      Devam Ediyor
+                    </label>
+                  </div>
+                  <input 
+                    className="form-input" 
+                    type="date" 
+                    value={stop.endDate || ''} 
+                    onChange={e => updateStop(stop.id, 'endDate', e.target.value || null)} 
+                    disabled={!stop.endDate}
+                    style={{ opacity: !stop.endDate ? 0.4 : 1, transition: 'opacity 0.2s' }}
+                  />
                 </div>
               </div>
             </div>
@@ -1693,6 +1716,8 @@ function StatsPage() {
   const totalDays = (totalHours / 24).toFixed(1);
   const filmCount = Math.round(totalHours / 2.5);
   const worldTours = (totalHours / 48).toFixed(1);
+  const nolanCount = (filmCount / 12).toFixed(1);
+  const moonTrips = (totalHours / 72).toFixed(1);
 
   // ── Clinical Marathon ──
   const stepsPerPatient = Math.round(examDuration * 3.33);
@@ -1857,20 +1882,57 @@ function StatsPage() {
         </div>
       </div>
 
-      {/* ─── KART 1.5: SİNEMA VE UÇAK ─── */}
-      <div className="stats-evolution-grid" style={{ marginBottom: 'var(--space-base)' }}>
-        <div className="stats-bento-card" style={{ marginBottom: 0, padding: 'var(--space-md)' }}>
-          <div className="stats-card-icon" style={{ marginBottom: '8px' }}><Icons.Film /></div>
-          <div className="stats-card-section-title" style={{ fontSize: '0.625rem', marginBottom: '8px' }}>Sinematik Mesai</div>
-          <div className="stats-metric-number gold" style={{ fontSize: '1.5rem', marginBottom: '4px' }}>{filmCount.toLocaleString('tr-TR')}</div>
-          <div className="stats-narrative" style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>uzun metrajlı film izlemeye eşdeğer süre</div>
+      {/* ─── KART 3: KLİNİK PERDE ─── */}
+      <div className="stats-bento-card">
+        <div className="stats-card-glow stats-glow-gold" />
+        <div className="stats-card-icon"><Icons.Film /></div>
+        <div className="stats-card-section-title">Klinik Perde</div>
+
+        <div className="stats-hero-metrics">
+          <div className="stats-metric-big">
+            <span className="stats-metric-number gold">{filmCount.toLocaleString('tr-TR')}</span>
+            <span className="stats-metric-unit">film</span>
+          </div>
         </div>
-        
-        <div className="stats-bento-card" style={{ marginBottom: 0, padding: 'var(--space-md)' }}>
-          <div className="stats-card-icon" style={{ marginBottom: '8px' }}><Icons.Plane /></div>
-          <div className="stats-card-section-title" style={{ fontSize: '0.625rem', marginBottom: '8px' }}>Global Kâşif</div>
-          <div className="stats-metric-number emerald" style={{ fontSize: '1.5rem', marginBottom: '4px' }}>{worldTours}</div>
-          <div className="stats-narrative" style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>kez dünyayı uçuşla turlama süresi</div>
+
+        <p className="stats-narrative">
+          Şifa dağıtırken toplamda <strong className="text-gold">{filmCount.toLocaleString('tr-TR')} uzun metrajlı film</strong> izlemeye eşdeğer vakit harcadınız.
+        </p>
+
+        <div className="stats-comparison-badge">
+          <Icons.Star />
+          <span>Bu süre zarfında Christopher Nolan'ın tüm filmografisini baştan sona <strong>{nolanCount} kez</strong> izleyebilirdiniz.</span>
+        </div>
+
+        <div className="stats-quote">
+          "Her hasta, şifa dolu bir hikayedir."
+        </div>
+      </div>
+
+      {/* ─── KART 4: GLOBAL KÂŞİF ─── */}
+      <div className="stats-bento-card">
+        <div className="stats-card-glow stats-glow-gold" />
+        <div className="stats-card-icon"><Icons.Plane /></div>
+        <div className="stats-card-section-title">Global Kâşif</div>
+
+        <div className="stats-hero-metrics">
+          <div className="stats-metric-big">
+            <span className="stats-metric-number gold">{worldTours}</span>
+            <span className="stats-metric-unit">tur</span>
+          </div>
+        </div>
+
+        <p className="stats-narrative">
+          Bu mesai süresiyle dünyayı uçakla <strong className="text-gold">{worldTours} kez</strong> tam tur dönebilirdiniz.
+        </p>
+
+        <div className="stats-comparison-badge">
+          <Icons.MapPin />
+          <span>Bu süreyle Dünya'dan Ay'a <strong>{moonTrips} kez</strong> uçak hızında seyahat edebilirdiniz.</span>
+        </div>
+
+        <div className="stats-quote">
+          "Emeğiniz dünyayı çepeçevre sarar."
         </div>
       </div>
 
