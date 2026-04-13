@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Asklepion PWA İkon Oluşturucu</title>
+  <style>
+    body { background: #131620; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
+    button { background: #D4AF37; color: black; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #FDE68A; }
+  </style>
+</head>
+<body>
+  <h1>Asklepion İkon Üretici</h1>
+  <p>iOS ve Android PWA uyumluluğu için gerekli olan ikonları (PNG) indirmek üzere aşağıdaki butona tıklayın.</p>
+  <button id="downloadBtn">İkonları İndir (192, 512, 180 Apple)</button>
+
+  <script>
+    const svgContent = `
+    <svg width="512" height="512" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" fill="#131620" />
+      <defs>
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#FDE68A" />
+          <stop offset="50%" stopColor="#D4AF37" />
+          <stop offset="100%" stopColor="#B45309" />
+        </linearGradient>
+        <filter id="logoGlow">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+      <path d="M47 15 h6 v75 h-6 z" fill="url(#logoGrad)" filter="url(#logoGlow)" />
+      <path d="M50 82 C 75 75, 75 55, 50 50 C 25 45, 25 25, 50 20 C 65 18, 70 15, 65 8" stroke="url(#logoGrad)" strokeWidth="5.5" fill="none" strokeLinecap="round" filter="url(#logoGlow)" />
+      <rect x="43" y="10" width="14" height="5" rx="2" fill="url(#logoGrad)" filter="url(#logoGlow)" />
+      <rect x="44" y="88" width="12" height="4" rx="2" fill="url(#logoGrad)" filter="url(#logoGlow)" />
+    </svg>`;
+
+    function downloadSvgAsPng(size, filename) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      const svg = new Blob([svgContent], {type: 'image/svg+xml;charset=utf-8'});
+      const url = URL.createObjectURL(svg);
+      
+      img.onload = () => {
+        ctx.fillStyle = '#131620';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        const pngUrl = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = pngUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      downloadSvgAsPng(192, 'icon-192.png');
+      setTimeout(() => downloadSvgAsPng(512, 'icon-512.png'), 500);
+      setTimeout(() => downloadSvgAsPng(180, 'apple-touch-icon.png'), 1000);
+      alert("İkonlar indiriliyor... Lütfen tarayıcının indirme iznine onay verin. İndikten sonra bu PNG dosyalarını projenizin dizinine atıp Github'a yükleyebilirsiniz.");
+    });
+  </script>
+</body>
+</html>
