@@ -789,14 +789,18 @@ function StatsGrid() {
 
   const careerPeak = useMemo(() => {
     let peak = 0;
+    let peakKey = null;
     data.careerStops.forEach(stop => {
-      const vals = Object.values(stop.monthlyPatients || {});
-      vals.forEach(v => {
+      const vals = Object.entries(stop.monthlyPatients || {});
+      vals.forEach(([k, v]) => {
         const num = Number(v) || 0;
-        if (num > peak) peak = num;
+        if (num > peak) {
+          peak = num;
+          peakKey = k;
+        }
       });
     });
-    return peak;
+    return { peak, peakKey };
   }, [data.careerStops]);
 
   return (
@@ -827,10 +831,11 @@ function StatsGrid() {
         <div className="stat-card-label">
           <Icons.Star /> KARİYER ZİRVESİ
         </div>
-        <div className="stat-card-value">
-          <NumberTicker value={careerPeak} />
+        <div className="stat-card-value" style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+          <NumberTicker value={careerPeak.peak} />
+          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 500 }}>hasta</span>
         </div>
-        <div className="stat-card-subtext">en yoğun ay</div>
+        <div className="stat-card-subtext">{careerPeak.peakKey ? formatMonthYear(careerPeak.peakKey) : 'Henüz veri yok'}</div>
       </SpotlightCard>
 
       <SpotlightCard>
@@ -963,7 +968,7 @@ function CareerChart() {
               axisLine={false}
               tickLine={false}
             />
-            <Tooltip content={<CareerChartTooltip />} />
+            <Tooltip content={<CareerChartTooltip />} trigger="click" cursor={{ stroke: 'rgba(212, 175, 55, 0.4)', strokeWidth: 1 }} />
             <Area
               type="monotone"
               dataKey="patients"
