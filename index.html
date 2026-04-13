@@ -831,16 +831,15 @@ function StatsGrid() {
         <div className="stat-card-label">
           <Icons.Star /> KARİYER ZİRVESİ
         </div>
-        <div className="stat-card-value" style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+        <div className="stat-card-value">
           <NumberTicker value={careerPeak.peak} />
-          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: 500 }}>hasta</span>
         </div>
         <div className="stat-card-subtext">{careerPeak.peakKey ? formatMonthYear(careerPeak.peakKey) : 'Henüz veri yok'}</div>
       </SpotlightCard>
 
       <SpotlightCard>
         <div className="stat-card-label">
-          <Icons.MapPin /> KARİYER DURAKLARI
+          <Icons.MapPin /> TOPLAM DURAK
         </div>
         <div className="stat-card-value">{totalStops}</div>
         <div className="stat-card-subtext">görev yeri</div>
@@ -886,18 +885,20 @@ function Dashboard() {
 }
 
 // ─── CAREER CHART ─────────────────────────────────────
-function CareerChartTooltip({ active, payload, label }) {
-  if (!active || !payload || !payload.length || typeof payload[0].value !== 'number') return null;
-  return (
-    <div className="custom-tooltip">
-      <div className="custom-tooltip-label">{formatMonthYear(label)}</div>
-      <div className="custom-tooltip-value">{payload[0].value.toLocaleString('tr-TR')} hasta</div>
-    </div>
-  );
-}
-
 function CareerChart() {
   const { data } = useApp();
+  const [clickedKey, setClickedKey] = useState(null);
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload || !payload.length || typeof payload[0].value !== 'number') return null;
+    if (label !== clickedKey) return null;
+    return (
+      <div className="custom-tooltip">
+        <div className="custom-tooltip-label">{formatMonthYear(label)}</div>
+        <div className="custom-tooltip-value">{payload[0].value.toLocaleString('tr-TR')} hasta</div>
+      </div>
+    );
+  };
 
   const chartData = useMemo(() => {
     const monthMap = {};
@@ -943,7 +944,17 @@ function CareerChart() {
       <div style={{ width: '100%', overflowX: 'auto', overflowY: 'hidden', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
         <div style={{ minWidth: Math.max(100, chartData.length * 8) + '%', height: 260 }}>
           <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
+          <AreaChart
+            data={chartData}
+            margin={{ top: 10, right: 8, left: -20, bottom: 0 }}
+            onClick={(e) => {
+              if (e && e.activeLabel) {
+                setClickedKey(prev => prev === e.activeLabel ? null : e.activeLabel);
+              } else {
+                setClickedKey(null);
+              }
+            }}
+          >
             <defs>
               <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#D4AF37" stopOpacity={0.3} />
@@ -968,7 +979,7 @@ function CareerChart() {
               axisLine={false}
               tickLine={false}
             />
-            <Tooltip content={<CareerChartTooltip />} trigger="click" cursor={{ stroke: 'rgba(212, 175, 55, 0.4)', strokeWidth: 1 }} />
+            <Tooltip content={<CustomTooltip />} cursor={clickedKey ? { stroke: 'rgba(212, 175, 55, 0.4)', strokeWidth: 1 } : false} />
             <Area
               type="monotone"
               dataKey="patients"
