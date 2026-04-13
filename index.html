@@ -775,11 +775,17 @@ function StatsGrid() {
   const totalStops = data.careerStops.length;
 
   const monthlyAvg = useMemo(() => {
-    if (!activeStop) return 0;
-    const patients = Object.values(activeStop.monthlyPatients || {});
-    if (patients.length === 0) return 0;
-    return Math.round(patients.reduce((a, b) => a + Number(b), 0) / patients.length);
-  }, [activeStop]);
+    let totalPatients = 0;
+    let totalMonths = 0;
+    data.careerStops.forEach(stop => {
+      const vals = Object.values(stop.monthlyPatients || {});
+      vals.forEach(v => {
+        totalPatients += Number(v) || 0;
+        totalMonths += 1;
+      });
+    });
+    return totalMonths === 0 ? 0 : Math.round(totalPatients / totalMonths);
+  }, [data.careerStops]);
 
   const thisMonth = useMemo(() => {
     const now = new Date();
@@ -1078,8 +1084,8 @@ function PatientEntrySheet({ onClose }) {
     saveData(newData);
     setToast(true);
     setTimeout(() => {
-      onClose();
-    }, 800);
+      setToast(false);
+    }, 1500);
   }
 
   const currentYear = new Date().getFullYear();
@@ -1144,11 +1150,11 @@ function PatientEntrySheet({ onClose }) {
           />
         </div>
 
-        <button className="btn-primary" onClick={handleSave} disabled={!count}>
+        <button className="btn-primary" onClick={handleSave} disabled={!count} style={{ touchAction: 'manipulation' }}>
           Kaydet
         </button>
       </div>
-      <Toast message="Kaydedildi ✓" show={toast} onHide={() => setToast(false)} />
+      <Toast message="Başarıyla Kaydedildi ✓" show={toast} onHide={() => setToast(false)} />
     </>
   );
 }
