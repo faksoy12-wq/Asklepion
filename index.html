@@ -185,6 +185,15 @@ const Icons = {
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
+  Trash: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18"/>
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+      <line x1="10" x2="10" y1="11" y2="17"/>
+      <line x1="14" x2="14" y1="11" y2="17"/>
+    </svg>
+  ),
   Edit: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
@@ -201,6 +210,23 @@ const Icons = {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z" />
       <path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z" />
+    </svg>
+  ),
+  Plane: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.7l-1.3 2.6c-.2.4-.1 1 .3 1.3L9 14l-4 4-3-1-1 1 4 4 1-1-1-3 4-4 3.2 6.3c.3.4.9.5 1.3.3l2.6-1.3c.5-.2.8-.6.7-1.1Z"/>
+    </svg>
+  ),
+  Film: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+      <line x1="7" y1="2" x2="7" y2="22"/>
+      <line x1="17" y1="2" x2="17" y2="22"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <line x1="2" y1="7" x2="7" y2="7"/>
+      <line x1="2" y1="17" x2="7" y2="17"/>
+      <line x1="17" y1="17" x2="22" y2="17"/>
+      <line x1="17" y1="7" x2="22" y2="7"/>
     </svg>
   ),
   Timer: () => (
@@ -1377,7 +1403,24 @@ function ProfileEditSheet({ onClose }) {
           {stops.map((stop) => (
             <div key={stop.id} className="career-stop-item" style={{ padding: '12px' }}>
               <div className="form-group" style={{ marginBottom: 8 }}>
-                <label className="form-label">Kurum</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label className="form-label" style={{ marginBottom: 0 }}>Kurum</label>
+                  {stops.length > 1 && (
+                    <div 
+                      onClick={() => {
+                        if (window.confirm('Bu kurumu silmek istediğinize emin misiniz? (Bu kuruma ait tüm verileriniz silinecektir)')) {
+                          setStops(stops.filter(s => s.id !== stop.id));
+                        }
+                      }}
+                      style={{ color: '#ef4444', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      title="Kurumu Sil"
+                    >
+                      <div style={{ width: '18px', height: '18px' }}>
+                        <Icons.Trash />
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <input className="form-input" value={stop.institution} onChange={e => updateStop(stop.id, 'institution', e.target.value)} />
               </div>
               <div className="form-row" style={{ marginBottom: 8 }}>
@@ -1652,7 +1695,8 @@ function StatsPage() {
   const worldTours = (totalHours / 48).toFixed(1);
 
   // ── Clinical Marathon ──
-  const totalSteps = totalPatients * 10;
+  const stepsPerPatient = Math.round(examDuration * 3.33);
+  const totalSteps = totalPatients * stepsPerPatient;
   const totalKm = (totalSteps * 0.75 / 1000).toFixed(1);
   const istanbulLength = 150; // km
   const istanbulRoundTrips = (parseFloat(totalKm) / (istanbulLength * 2)).toFixed(1);
@@ -1732,9 +1776,11 @@ function StatsPage() {
 
   // ── Year-over-Year comparison ──
   const yoyComparison = useMemo(() => {
-    const now = new Date();
-    const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const lastYearKey = `${now.getFullYear() - 1}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const prevDate = new Date();
+    prevDate.setMonth(prevDate.getMonth() - 1); // Geçen ay baz alınıyor
+    
+    const currentKey = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+    const lastYearKey = `${prevDate.getFullYear() - 1}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
 
     let currentVal = 0, lastYearVal = 0;
     data.careerStops.forEach(stop => {
@@ -1743,7 +1789,7 @@ function StatsPage() {
     });
 
     const diff = lastYearVal > 0 ? Math.round(((currentVal - lastYearVal) / lastYearVal) * 100) : null;
-    return { current: currentVal, lastYear: lastYearVal, diff };
+    return { current: currentVal, lastYear: lastYearVal, diff, monthIndex: prevDate.getMonth() };
   }, [data]);
 
   if (totalPatients === 0) {
@@ -1787,12 +1833,6 @@ function StatsPage() {
           başkalarının sağlığına adadığınız anlamına geliyor.
         </p>
 
-        <p className="stats-narrative" style={{ marginTop: 'var(--space-md)' }}>
-          Hastalarınızı <strong className="text-gold">{totalHours.toLocaleString('tr-TR')} saat</strong> boyunca
-          can kulağıyla dinlediniz. Bu süre, <strong className="text-gold">{filmCount.toLocaleString('tr-TR')} uzun metrajlı film</strong> izlemeye
-          veya dünyayı uçakla <strong className="text-gold">{worldTours} kez</strong> turlamaya eşdeğer.
-        </p>
-
         <div className="stats-slider-container">
           <div className="stats-slider-header">
             <span className="stats-slider-label">Ortalama Muayene Süresi</span>
@@ -1814,6 +1854,23 @@ function StatsPage() {
 
         <div className="stats-quote">
           "Zaman, bir hekimin hastasına sunduğu en kıymetli ilaçtır."
+        </div>
+      </div>
+
+      {/* ─── KART 1.5: SİNEMA VE UÇAK ─── */}
+      <div className="stats-evolution-grid" style={{ marginBottom: 'var(--space-base)' }}>
+        <div className="stats-bento-card" style={{ marginBottom: 0, padding: 'var(--space-md)' }}>
+          <div className="stats-card-icon" style={{ marginBottom: '8px' }}><Icons.Film /></div>
+          <div className="stats-card-section-title" style={{ fontSize: '0.625rem', marginBottom: '8px' }}>Sinematik Mesai</div>
+          <div className="stats-metric-number gold" style={{ fontSize: '1.5rem', marginBottom: '4px' }}>{filmCount.toLocaleString('tr-TR')}</div>
+          <div className="stats-narrative" style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>uzun metrajlı film izlemeye eşdeğer süre</div>
+        </div>
+        
+        <div className="stats-bento-card" style={{ marginBottom: 0, padding: 'var(--space-md)' }}>
+          <div className="stats-card-icon" style={{ marginBottom: '8px' }}><Icons.Plane /></div>
+          <div className="stats-card-section-title" style={{ fontSize: '0.625rem', marginBottom: '8px' }}>Global Kâşif</div>
+          <div className="stats-metric-number emerald" style={{ fontSize: '1.5rem', marginBottom: '4px' }}>{worldTours}</div>
+          <div className="stats-narrative" style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>kez dünyayı uçuşla turlama süresi</div>
         </div>
       </div>
 
@@ -1906,7 +1963,7 @@ function StatsPage() {
               <div className={`stats-evo-value ${yoyComparison.diff >= 0 ? 'emerald' : 'gold'}`}>
                 {yoyComparison.diff >= 0 ? '+' : ''}{yoyComparison.diff}%
               </div>
-              <div className="stats-evo-sub">{MONTHS_TR[new Date().getMonth()]} ayı kıyası</div>
+              <div className="stats-evo-sub">{MONTHS_TR[yoyComparison.monthIndex]} ayı kıyası</div>
             </div>
           )}
         </div>
