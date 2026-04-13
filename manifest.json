@@ -1,0 +1,19 @@
+{
+  "name": "Asklepion — Hekim Kariyer Defteri",
+  "short_name": "Asklepion",
+  "description": "Profesyonel Hekim Kariyer ve Hasta Takip Defteri",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "lang": "tr",
+  "orientation": "portrait",
+  "categories": ["medical", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚕️</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

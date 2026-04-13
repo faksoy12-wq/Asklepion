@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0A0A0A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Asklepion — Profesyonel Hekim Kariyer Defteri. Mesleki yolculuğunuzu, hasta sayılarınızı ve kariyer dönüm noktalarınızı takip edin.">
+    <title>Asklepion — Hekim Kariyer Defteri</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚕️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app"></div>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react-is@18/umd/react-is.development.js"></script>
+    <script src="https://unpkg.com/prop-types@15.8.1/prop-types.js"></script>
+    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+/* =============================================
+   ASKLEPION — Profesyonel Hekim Kariyer Defteri
+   Premium SPA • Mobile-First • Local-First
+   ============================================= */
+
+const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
+const {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, ReferenceLine, Area, AreaChart
+} = Recharts;
+
+// ─── ICONS (SVG Components) ───────────────────────────
+const Icons = {
+  Logo: ({ size = 48, className = '' }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className} style={{ width: size, height: size, flexShrink: 0 }}>
+      <defs>
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#FDE68A" />
+          <stop offset="50%" stopColor="#D4AF37" />
+          <stop offset="100%" stopColor="#B45309" />
+        </linearGradient>
+        <filter id="logoGlow">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+      {/* Thick Rod */}
+      <path d="M47 15 h6 v75 h-6 z" fill="url(#logoGrad)" filter="url(#logoGlow)" />
+      {/* Snake Body wrapping around */}
+      <path d="M50 82 C 75 75, 75 55, 50 50 C 25 45, 25 25, 50 20 C 65 18, 70 15, 65 8" stroke="url(#logoGrad)" strokeWidth="5.5" fill="none" strokeLinecap="round" filter="url(#logoGlow)" />
+      {/* Rod base and top block */}
+      <rect x="43" y="10" width="14" height="5" rx="2" fill="url(#logoGrad)" filter="url(#logoGlow)" />
+      <rect x="44" y="88" width="12" height="4" rx="2" fill="url(#logoGrad)" filter="url(#logoGlow)" />
+    </svg>
+  ),
+  Home: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+      <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    </svg>
+  ),
+  Chart: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+      <path d="m19 9-5 5-4-4-3 3" />
+    </svg>
+  ),
+  Settings: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ),
+  Plus: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  ),
+  Heart: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+    </svg>
+  ),
+  Clock: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  Building: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
+      <path d="M9 22v-4h6v4" />
+      <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01" />
+    </svg>
+  ),
+  Users: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+  Activity: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+    </svg>
+  ),
+  Download: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  ),
+  Upload: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  ),
+  Trash: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  ),
+  ChevronRight: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  ),
+  Flag: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+      <line x1="4" y1="22" x2="4" y2="15" />
+    </svg>
+  ),
+  Star: () => (
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  Stethoscope: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 2v2M5 2v2M5 4a6 6 0 0 0 4.77 5.89M11 4a6 6 0 0 1-4.77 5.89M5 4H2M11 4h3" />
+      <path d="M8.5 9.89V14a4.5 4.5 0 0 0 9 0v-2" />
+      <circle cx="17.5" cy="10" r="2" />
+    </svg>
+  ),
+  MapPin: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  ),
+  Info: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4M12 8h.01" />
+    </svg>
+  ),
+  Check: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+  X: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
+  Edit: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+    </svg>
+  ),
+};
+
+// ─── UTILITY FUNCTIONS ────────────────────────────────
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+}
+
+const MONTHS_TR = [
+  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+];
+
+const MONTHS_SHORT = [
+  'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
+  'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'
+];
+
+function formatMonthYear(dateStr) {
+  if (!dateStr) return 'Günümüz';
+  const [year, month] = dateStr.split('-');
+  return `${MONTHS_TR[parseInt(month) - 1]} ${year}`;
+}
+
+function formatMonthYearShort(dateStr) {
+  if (!dateStr) return '';
+  const [year, month] = dateStr.split('-');
+  return `${MONTHS_SHORT[parseInt(month) - 1]} ${year.slice(2)}`;
+}
+
+function getCareerDuration(startDate) {
+  const dateStr = startDate.length === 7 ? startDate + '-01' : startDate;
+  const start = new Date(dateStr);
+  if (isNaN(start.getTime())) return { years: 0, months: 0, days: 0 };
+  
+  const now = new Date();
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+  let days = now.getDate() - start.getDate();
+  if (days < 0) {
+    months--;
+    days += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+  }
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  return { years, months, days };
+}
+
+function getAllMonthsBetween(startDate, endDate) {
+  const result = [];
+  const startStr = startDate.length === 7 ? startDate + '-01' : startDate;
+  const start = new Date(startStr);
+  const endStr = endDate ? (endDate.length === 7 ? endDate + '-01' : endDate) : null;
+  const end = endStr ? new Date(endStr) : new Date();
+  const current = new Date(start);
+  while (current <= end) {
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, '0');
+    result.push(`${y}-${m}`);
+    current.setMonth(current.getMonth() + 1);
+  }
+  return result;
+}
+
+// ─── STORAGE ──────────────────────────────────────────
+const STORAGE_KEY = 'asklepion_data';
+
+function getDefaultData() {
+  return {
+    physician: { name: '', title: '', careerStartDate: '' },
+    careerStops: [],
+    onboardingComplete: false,
+  };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { console.error('Storage read error:', e); }
+  return getDefaultData();
+}
+
+function saveData(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) { console.error('Storage write error:', e); }
+}
+
+function exportData() {
+  const data = loadData();
+  return JSON.stringify(data, null, 2);
+}
+
+function importDataFromJSON(json) {
+  try {
+    const data = JSON.parse(json);
+    if (data.physician && data.careerStops !== undefined) {
+      saveData(data);
+      return data;
+    }
+    return null;
+  } catch (e) { return null; }
+}
+
+// ─── APP CONTEXT ──────────────────────────────────────
+const AppContext = createContext(null);
+
+function useApp() {
+  return useContext(AppContext);
+}
+
+// ─── NUMBER TICKER ────────────────────────────────────
+function NumberTicker({ value, duration = 1200 }) {
+  const [display, setDisplay] = useState(0);
+  const frameRef = useRef(null);
+
+  useEffect(() => {
+    const start = display;
+    const end = value;
+    const startTime = performance.now();
+
+    function tick(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease out quart
+      const eased = 1 - Math.pow(1 - progress, 4);
+      setDisplay(Math.round(start + (end - start) * eased));
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(tick);
+      }
+    }
+    frameRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [value]);
+
+  return value.toLocaleString('tr-TR').split('').map((char, i) => {
+    const displayStr = display.toLocaleString('tr-TR');
+    return (
+      <span key={i} style={{ display: 'inline-block' }}>
+        {displayStr[i] || ''}
+      </span>
+    );
+  });
+}
+
+// ─── SPOTLIGHT CARD ───────────────────────────────────
+function SpotlightCard({ children, className = '', style = {}, ...props }) {
+  const cardRef = useRef(null);
+  const glowRef = useRef(null);
+
+  const handleMove = useCallback((clientX, clientY) => {
+    if (!cardRef.current || !glowRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    glowRef.current.style.left = x + 'px';
+    glowRef.current.style.top = y + 'px';
+    glowRef.current.style.opacity = '1';
+  }, []);
+
+  const handleLeave = useCallback(() => {
+    if (glowRef.current) glowRef.current.style.opacity = '0';
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      className={`spotlight-card ${className}`}
+      style={style}
+      onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
+      onTouchMove={(e) => handleMove(e.touches[0].clientX, e.touches[0].clientY)}
+      onMouseLeave={handleLeave}
+      onTouchEnd={handleLeave}
+      {...props}
+    >
+      <div ref={glowRef} className="spotlight-glow" />
+      {children}
+    </div>
+  );
+}
+
+// ─── TOAST ────────────────────────────────────────────
+function Toast({ message, show, onHide }) {
+  useEffect(() => {
+    if (show) {
+      const timer = setTimeout(onHide, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [show]);
+
+  if (!show) return null;
+  return (
+    <div className="toast toast-success">
+      <Icons.Check /> {message}
+    </div>
+  );
+}
+
+// ─── CONFIRM DIALOG ───────────────────────────────────
+function ConfirmDialog({ show, title, description, onConfirm, onCancel, confirmText = 'Onayla', danger = false }) {
+  if (!show) return null;
+  return (
+    <div className="confirm-overlay" onClick={onCancel}>
+      <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
+        <div className="confirm-title">{title}</div>
+        <div className="confirm-desc">{description}</div>
+        <div className="confirm-actions">
+          <button className="btn-secondary" onClick={onCancel}>İptal</button>
+          <button className={danger ? 'btn-danger' : 'btn-primary'} onClick={onConfirm}>
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ONBOARDING WIZARD ───────────────────────────────
+function OnboardingWizard() {
+  const { data, setData } = useApp();
+  const [step, setStep] = useState(0);
+  const [name, setName] = useState('');
+  const [title, setTitle] = useState('');
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [currentInstitution, setCurrentInstitution] = useState('');
+  const [currentDepartment, setCurrentDepartment] = useState('');
+  const [currentRole, setCurrentRole] = useState('Pratisyen Hekim');
+  const [pastStops, setPastStops] = useState([]);
+
+  const totalSteps = 4;
+
+  function addPastStop() {
+    setPastStops([...pastStops, {
+      id: generateId(),
+      institution: '',
+      department: '',
+      role: 'Pratisyen Hekim',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: '',
+    }]);
+  }
+
+  function removePastStop(id) {
+    setPastStops(pastStops.filter(s => s.id !== id));
+  }
+
+  function updatePastStop(id, field, value) {
+    setPastStops(pastStops.map(s => s.id === id ? { ...s, [field]: value } : s));
+  }
+
+  function canProceed() {
+    switch (step) {
+      case 0: return !!startDate;
+      case 1: return name.trim().length > 0;
+      case 2: return currentInstitution.trim().length > 0;
+      case 3: return true;
+      default: return false;
+    }
+  }
+
+  function handleFinish() {
+    const careerStops = [];
+
+    // Add past stops
+    pastStops.forEach(ps => {
+      if (ps.institution.trim()) {
+        careerStops.push({
+          id: ps.id,
+          institution: ps.institution,
+          department: ps.department,
+          role: ps.role || 'Pratisyen Hekim',
+          startDate: ps.startDate,
+          endDate: ps.endDate ? ps.endDate : null,
+          monthlyPatients: {},
+        });
+      }
+    });
+
+    // Add current stop
+    careerStops.push({
+      id: generateId(),
+      institution: currentInstitution,
+      department: currentDepartment,
+      role: currentRole,
+      startDate: careerStops.length > 0 && careerStops[careerStops.length - 1].endDate
+        ? careerStops[careerStops.length - 1].endDate
+        : startDate,
+      endDate: null,
+      monthlyPatients: {},
+    });
+
+    const newData = {
+      physician: {
+        name: name,
+        title: title || currentRole,
+        careerStartDate: startDate,
+      },
+      careerStops,
+      onboardingComplete: true,
+    };
+
+    setData(newData);
+    saveData(newData);
+  }
+
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = currentYear; y >= 1970; y--) years.push(y);
+
+  const renderStep = () => {
+    switch (step) {
+      case 0:
+        return (
+          <div className="step-content" key="step-0">
+            <div className="step-question">Kutsal mesleğinize ne zaman başladınız?</div>
+            <p className="step-subtitle">Hekimlik yolculuğunuzun başlangıç tarihini seçin.</p>
+            <div className="form-group">
+              <label className="form-label">Başlangıç Tarihi</label>
+              <input
+                className="form-input"
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+              />
+            </div>
+          </div>
+        );
+
+      case 1:
+        return (
+          <div className="step-content" key="step-1">
+            <div className="step-question">Hekimlik isminiz ve unvanınız nedir?</div>
+            <p className="step-subtitle">Platformda gösterilecek isminizi girin.</p>
+            <div className="form-group">
+              <label className="form-label">İsim</label>
+              <input
+                className="form-input"
+                type="text"
+                placeholder="Örn: Dr. Furkan Aksoy"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Unvan (Opsiyonel)</label>
+              <input
+                className="form-input"
+                type="text"
+                placeholder="Örn: Pratisyen Hekim"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+              />
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="step-content" key="step-2">
+            <div className="step-question">Şu anki aktif Görev Yeriniz nedir?</div>
+            <p className="step-subtitle">Mevcut çalıştığınız kurum bilgilerini girin.</p>
+            <div className="form-group">
+              <label className="form-label">Kurum Adı</label>
+              <input
+                className="form-input"
+                type="text"
+                placeholder="Örn: Keklikova Aile Sağlığı Merkezi"
+                value={currentInstitution}
+                onChange={e => setCurrentInstitution(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Bölüm / Birim</label>
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="Örn: ASM"
+                  value={currentDepartment}
+                  onChange={e => setCurrentDepartment(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Pozisyon</label>
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="Pratisyen Hekim"
+                  value={currentRole}
+                  onChange={e => setCurrentRole(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="step-content" key="step-3">
+            <div className="step-question">Geçmiş görev yerlerini eklemek ister misiniz?</div>
+            <p className="step-subtitle">Önceki kariyer duraklarınızı ekleyin. Daha sonra da ekleyebilirsiniz.</p>
+
+            <div className="career-stop-list">
+              {pastStops.map((stop, idx) => (
+                <div key={stop.id} className="career-stop-item">
+                  <button className="remove-btn" onClick={() => removePastStop(stop.id)}>×</button>
+                  <div className="form-group">
+                    <label className="form-label">Kurum Adı</label>
+                    <input
+                      className="form-input"
+                      type="text"
+                      placeholder="Örn: Erciş Devlet Hastanesi"
+                      value={stop.institution}
+                      onChange={e => updatePastStop(stop.id, 'institution', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Bölüm</label>
+                      <input
+                        className="form-input"
+                        type="text"
+                        placeholder="ACİL"
+                        value={stop.department}
+                        onChange={e => updatePastStop(stop.id, 'department', e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Pozisyon</label>
+                      <input
+                        className="form-input"
+                        type="text"
+                        placeholder="Pratisyen Hekim"
+                        value={stop.role}
+                        onChange={e => updatePastStop(stop.id, 'role', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Başlangıç</label>
+                      <input className="form-input" type="date" value={stop.startDate} onChange={e => updatePastStop(stop.id, 'startDate', e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Bitiş</label>
+                      <input className="form-input" type="date" value={stop.endDate || ''} onChange={e => updatePastStop(stop.id, 'endDate', e.target.value || null)} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button className="add-stop-btn" onClick={addPastStop}>
+              <Icons.Plus /> Geçmiş görev yeri ekle
+            </button>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="onboarding-container">
+      <div className="onboarding-card">
+        <div className="onboarding-logo">
+          <Icons.Logo size={64} />
+          <h1>Asklepion</h1>
+          <p>Hekim Kariyer Günlüğü</p>
+        </div>
+
+        <div className="progress-bar-container">
+          <div
+            className="progress-bar-fill"
+            style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
+          />
+        </div>
+
+        {renderStep()}
+
+        <div className="btn-row">
+          {step > 0 && (
+            <button className="btn-secondary" onClick={() => setStep(step - 1)}>
+              Geri
+            </button>
+          )}
+          {step < totalSteps - 1 ? (
+            <button
+              className="btn-primary"
+              disabled={!canProceed()}
+              onClick={() => setStep(step + 1)}
+            >
+              Devam
+            </button>
+          ) : (
+            <button className="btn-primary" onClick={handleFinish}>
+              ✨ Başlayalım
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── HERO CARD ────────────────────────────────────────
+function HeroCard() {
+  const { data } = useApp();
+
+  const totalPatients = useMemo(() => {
+    let total = 0;
+    data.careerStops.forEach(stop => {
+      Object.values(stop.monthlyPatients || {}).forEach(v => {
+        total += Number(v) || 0;
+      });
+    });
+    return total;
+  }, [data]);
+
+  return (
+    <div className="hero-card">
+      <div className="hero-card-label">
+        <Icons.Heart /> DOKUNULAN TOPLAM HAYAT
+      </div>
+      <div className="hero-card-value">
+        <NumberTicker value={totalPatients} />
+      </div>
+      <div className="hero-card-suffix">
+        {totalPatients === 0 ? 'Veri girmeye başlayın' : 'kişinin hayatına dokundunuz'}
+      </div>
+    </div>
+  );
+}
+
+// ─── CAREER TIMER ─────────────────────────────────────
+function CareerTimer() {
+  const { data } = useApp();
+  const [duration, setDuration] = useState({ years: 0, months: 0, days: 0 });
+
+  useEffect(() => {
+    function update() {
+      if (data.physician.careerStartDate) {
+        setDuration(getCareerDuration(data.physician.careerStartDate));
+      }
+    }
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [data.physician.careerStartDate]);
+
+  return (
+    <SpotlightCard className="career-timer-card">
+      <div className="stat-card-label">
+        <Icons.Clock /> KARİYER SAYACI
+      </div>
+      <div className="timer-display">
+        <div className="timer-segment">
+          <div className="timer-value">{duration.years}</div>
+          <div className="timer-label">Yıl</div>
+        </div>
+        <div className="timer-separator">:</div>
+        <div className="timer-segment">
+          <div className="timer-value">{duration.months}</div>
+          <div className="timer-label">Ay</div>
+        </div>
+        <div className="timer-separator">:</div>
+        <div className="timer-segment">
+          <div className="timer-value">{duration.days}</div>
+          <div className="timer-label">Gün</div>
+        </div>
+      </div>
+    </SpotlightCard>
+  );
+}
+
+// ─── STATS GRID ───────────────────────────────────────
+function StatsGrid() {
+  const { data } = useApp();
+
+  const activeStop = data.careerStops.find(s => !s.endDate);
+  const totalStops = data.careerStops.length;
+
+  const monthlyAvg = useMemo(() => {
+    if (!activeStop) return 0;
+    const patients = Object.values(activeStop.monthlyPatients || {});
+    if (patients.length === 0) return 0;
+    return Math.round(patients.reduce((a, b) => a + Number(b), 0) / patients.length);
+  }, [activeStop]);
+
+  const thisMonth = useMemo(() => {
+    const now = new Date();
+    const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    if (!activeStop) return 0;
+    return Number(activeStop.monthlyPatients?.[key]) || 0;
+  }, [activeStop]);
+
+  return (
+    <>
+      <SpotlightCard>
+        <div className="stat-card-label">
+          <Icons.Building /> AKTİF GÖREVYERİ
+        </div>
+        <div className="stat-card-value" style={{ fontSize: '1rem', fontWeight: 600 }}>
+          {activeStop ? activeStop.institution : '—'}
+        </div>
+        {activeStop && activeStop.department && (
+          <div className="stat-card-subtext">{activeStop.department} • {activeStop.role}</div>
+        )}
+      </SpotlightCard>
+
+      <SpotlightCard>
+        <div className="stat-card-label">
+          <Icons.Activity /> AYLIK ORTALAMA
+        </div>
+        <div className="stat-card-value">
+          <NumberTicker value={monthlyAvg} />
+        </div>
+        <div className="stat-card-subtext">hasta / ay</div>
+      </SpotlightCard>
+
+      <SpotlightCard>
+        <div className="stat-card-label">
+          <Icons.Users /> BU AY
+        </div>
+        <div className="stat-card-value">
+          <NumberTicker value={thisMonth} />
+        </div>
+        <div className="stat-card-subtext">hasta</div>
+      </SpotlightCard>
+
+      <SpotlightCard>
+        <div className="stat-card-label">
+          <Icons.MapPin /> KARİYER DURAKLARI
+        </div>
+        <div className="stat-card-value">{totalStops}</div>
+        <div className="stat-card-subtext">görev yeri</div>
+      </SpotlightCard>
+    </>
+  );
+}
+
+// ─── DASHBOARD ────────────────────────────────────────
+function Dashboard() {
+  const { data } = useApp();
+  const firstName = data.physician.name.split(' ').pop() || '';
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 6) return 'İyi geceler';
+    if (hour < 12) return 'Günaydın';
+    if (hour < 18) return 'İyi günler';
+    return 'İyi akşamlar';
+  };
+
+  return (
+    <div className="dashboard">
+      <div className="dashboard-header">
+        <div className="dashboard-greeting">
+          <span className="greeting-text">{getGreeting()},</span>
+          <span className="greeting-name">{data.physician.name}</span>
+        </div>
+        <div className="dashboard-header-right">
+          <div className="logo-small">
+            <Icons.Logo size={28} />
+          </div>
+        </div>
+      </div>
+
+      <div className="bento-grid">
+        <HeroCard />
+        <CareerTimer />
+        <StatsGrid />
+      </div>
+    </div>
+  );
+}
+
+// ─── CAREER CHART ─────────────────────────────────────
+function CareerChartTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length || typeof payload[0].value !== 'number') return null;
+  return (
+    <div className="custom-tooltip">
+      <div className="custom-tooltip-label">{formatMonthYear(label)}</div>
+      <div className="custom-tooltip-value">{payload[0].value.toLocaleString('tr-TR')} hasta</div>
+    </div>
+  );
+}
+
+function CareerChart() {
+  const { data } = useApp();
+
+  const chartData = useMemo(() => {
+    const monthMap = {};
+
+    data.careerStops.forEach(stop => {
+      Object.entries(stop.monthlyPatients || {}).forEach(([month, count]) => {
+        monthMap[month] = (monthMap[month] || 0) + Number(count);
+      });
+    });
+
+    const entries = Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b));
+    return entries.map(([month, count]) => ({
+      month,
+      label: formatMonthYearShort(month),
+      patients: count,
+    }));
+  }, [data]);
+
+  // Find milestone dates (career stop transitions)
+  const milestones = useMemo(() => {
+    return data.careerStops.map(stop => ({
+      date: stop.startDate,
+      label: stop.institution,
+      department: stop.department,
+    }));
+  }, [data]);
+
+  if (chartData.length === 0) {
+    return (
+      <div className="chart-container">
+        <div className="chart-title">Hasta Takip Grafiği</div>
+        <div className="empty-state">
+          <Icons.Chart />
+          <p>Henüz veri yok. Hasta sayılarını girmeye başladığınızda grafiğiniz burada görünecek.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="chart-container">
+      <div className="chart-title">Hasta Takip Grafiği</div>
+      <div style={{ width: '100%', height: 260 }}>
+        <ResponsiveContainer>
+          <AreaChart data={chartData} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#D4AF37" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#D4AF37" stopOpacity={0} />
+              </linearGradient>
+              <filter id="chartGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickFormatter={formatMonthYearShort}
+              tick={{ fontSize: 10 }}
+              interval="preserveStartEnd"
+              axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip content={<CareerChartTooltip />} />
+            <Area
+              type="monotone"
+              dataKey="patients"
+              stroke="#D4AF37"
+              strokeWidth={2.5}
+              fill="url(#goldGradient)"
+              style={{ filter: 'url(#chartGlow)' }}
+              dot={{ r: 3, fill: '#D4AF37', strokeWidth: 0 }}
+              activeDot={{ r: 5, fill: '#F5D063', strokeWidth: 2, stroke: '#D4AF37' }}
+            />
+            {milestones.map((m, idx) => (
+              <ReferenceLine
+                key={idx}
+                x={m.date ? m.date.slice(0, 7) : ''}
+                stroke="rgba(212, 175, 55, 0.8)"
+                strokeDasharray="4 4"
+                strokeWidth={2}
+                label={{
+                  value: m.label.length > 15 ? m.label.slice(0, 15) + '...' : m.label,
+                  position: 'insideTopLeft',
+                  fill: '#F5D063',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  dy: 10,
+                  dx: 5
+                }}
+              />
+            ))}
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+// ─── CAREER TIMELINE ──────────────────────────────────
+function CareerTimeline() {
+  const { data } = useApp();
+
+  return (
+    <div className="timeline">
+      {[...data.careerStops].reverse().map((stop, idx) => {
+        const totalPatients = Object.values(stop.monthlyPatients || {}).reduce((sum, val) => sum + Number(val), 0);
+        return (
+        <div key={stop.id} className="timeline-item">
+          <div className={`timeline-dot ${!stop.endDate ? 'active' : ''}`} />
+          <div className="timeline-content">
+            <div className="timeline-institution">
+              {stop.institution}
+              {!stop.endDate && (
+                <span className="timeline-active-badge">Aktif</span>
+              )}
+            </div>
+            {stop.department && (
+              <div className="timeline-department">{stop.department} • {stop.role}</div>
+            )}
+            <div className="timeline-dates" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>{formatMonthYear(stop.startDate)} — {stop.endDate ? formatMonthYear(stop.endDate) : 'Günümüz'}</span>
+              {totalPatients > 0 && (
+                <span style={{ color: 'var(--gold-400)', fontWeight: 600, fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Icons.Heart /> <span>{totalPatients.toLocaleString('tr-TR')} hayat</span>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── CAREER PAGE ──────────────────────────────────────
+function CareerPage() {
+  return (
+    <div className="career-page">
+      <div className="career-page-title">Kariyer Atlası</div>
+      <CareerChart />
+      <div style={{ padding: '0 4px' }}>
+        <div className="chart-title" style={{ marginBottom: 12 }}>Kariyer Durakları</div>
+        <CareerTimeline />
+      </div>
+    </div>
+  );
+}
+
+// ─── PATIENT ENTRY SHEET ──────────────────────────────
+function PatientEntrySheet({ onClose }) {
+  const { data, setData } = useApp();
+  const [month, setMonth] = useState(String(new Date().getMonth() + 1));
+  const [year, setYear] = useState(String(new Date().getFullYear()));
+  const [count, setCount] = useState('');
+  const [toast, setToast] = useState(false);
+
+  const activeStop = data.careerStops.find(s => !s.endDate);
+
+  const targetStop = useMemo(() => {
+    const key = `${year}-${month.padStart(2, '0')}`;
+    return [...data.careerStops].reverse().find(stop => {
+      const startKey = stop.startDate ? stop.startDate.slice(0, 7) : '';
+      const endKey = stop.endDate ? stop.endDate.slice(0, 7) : null;
+      const isAfterStart = startKey <= key;
+      const isBeforeEnd = !endKey || endKey >= key;
+      return isAfterStart && isBeforeEnd;
+    }) || activeStop;
+  }, [data.careerStops, year, month, activeStop]);
+
+  function handleSave() {
+    if (!count || !targetStop) return;
+
+    const key = `${year}-${month.padStart(2, '0')}`;
+    const newData = { ...data };
+    const stopIndex = newData.careerStops.findIndex(s => s.id === targetStop.id);
+    if (stopIndex === -1) return;
+    newData.careerStops[stopIndex] = {
+      ...newData.careerStops[stopIndex],
+      monthlyPatients: {
+        ...newData.careerStops[stopIndex].monthlyPatients,
+        [key]: Number(count),
+      },
+    };
+
+    setData(newData);
+    saveData(newData);
+    setToast(true);
+    setTimeout(() => {
+      onClose();
+    }, 800);
+  }
+
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  for (let y = currentYear; y >= 2000; y--) years.push(y);
+
+  const existingKey = `${year}-${month.padStart(2, '0')}`;
+  const existingValue = targetStop?.monthlyPatients?.[existingKey];
+
+  return (
+    <>
+      <div className="sheet-overlay" onClick={onClose} />
+      <div className="sheet-container">
+        <div className="sheet-handle" />
+        <div className="sheet-title">Hasta Sayısı Gir</div>
+
+        {targetStop && (
+          <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-lg)' }}>
+            <span style={{ color: 'var(--gold-400)' }}>⚑</span> {targetStop.institution}
+            {targetStop.department ? ` — ${targetStop.department}` : ''}
+          </div>
+        )}
+
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Ay</label>
+            <select className="form-select" value={month} onChange={e => setMonth(e.target.value)}>
+              {MONTHS_TR.map((m, i) => (
+                <option key={i} value={String(i + 1)}>{m}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Yıl</label>
+            <select className="form-select" value={year} onChange={e => setYear(e.target.value)}>
+              {years.map(y => (
+                <option key={y} value={String(y)}>{y}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">
+            Hasta Sayısı
+            {existingValue && (
+              <span style={{ color: 'var(--gold-400)', marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>
+                (mevcut: {existingValue})
+              </span>
+            )}
+          </label>
+          <input
+            className="form-input"
+            type="number"
+            inputMode="numeric"
+            placeholder="Örn: 450"
+            value={count}
+            onChange={e => setCount(e.target.value)}
+            autoFocus
+            style={{ fontSize: '1.5rem', fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-display)' }}
+          />
+        </div>
+
+        <button className="btn-primary" onClick={handleSave} disabled={!count}>
+          Kaydet
+        </button>
+      </div>
+      <Toast message="Kaydedildi ✓" show={toast} onHide={() => setToast(false)} />
+    </>
+  );
+}
+
+// ─── CAREER STOP FORM SHEET ───────────────────────────
+function CareerStopSheet({ onClose }) {
+  const { data, setData } = useApp();
+  const [institution, setInstitution] = useState('');
+  const [department, setDepartment] = useState('');
+  const [role, setRole] = useState('Pratisyen Hekim');
+  const [startOptDate, setStartOptDate] = useState(new Date().toISOString().split('T')[0]);
+  const [toast, setToast] = useState(false);
+
+  function handleSave() {
+    if (!institution.trim()) return;
+
+    const startDate = startOptDate;
+    const newData = { ...data };
+
+    // Close the currently active stop
+    const activeIdx = newData.careerStops.findIndex(s => !s.endDate);
+    if (activeIdx >= 0) {
+      newData.careerStops[activeIdx] = {
+        ...newData.careerStops[activeIdx],
+        endDate: startDate,
+      };
+    }
+
+    // Add new stop
+    newData.careerStops.push({
+      id: generateId(),
+      institution,
+      department,
+      role,
+      startDate,
+      endDate: null,
+      monthlyPatients: {},
+    });
+
+    setData(newData);
+    saveData(newData);
+    setToast(true);
+    setTimeout(onClose, 800);
+  }
+
+  return (
+    <>
+      <div className="sheet-overlay" onClick={onClose} />
+      <div className="sheet-container">
+        <div className="sheet-handle" />
+        <div className="sheet-title">Yeni Görev Yeri</div>
+
+        <div className="form-group">
+          <label className="form-label">Kurum Adı</label>
+          <input
+            className="form-input"
+            type="text"
+            placeholder="Örn: Merkez Devlet Hastanesi"
+            value={institution}
+            onChange={e => setInstitution(e.target.value)}
+            autoFocus
+          />
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Bölüm / Birim</label>
+            <input
+              className="form-input"
+              type="text"
+              placeholder="ACİL, ASM..."
+              value={department}
+              onChange={e => setDepartment(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Pozisyon</label>
+            <input
+              className="form-input"
+              type="text"
+              placeholder="Pratisyen Hekim"
+              value={role}
+              onChange={e => setRole(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Başlangıç Tarihi</label>
+          <input className="form-input" type="date" value={startOptDate} onChange={e => setStartOptDate(e.target.value)} />
+        </div>
+
+        <button className="btn-primary" onClick={handleSave} disabled={!institution.trim()}>
+          Görev Yeri Ekle
+        </button>
+      </div>
+      <Toast message="Görev yeri eklendi ✓" show={toast} onHide={() => setToast(false)} />
+    </>
+  );
+}
+
+// ─── ENTRY OPTIONS SHEET ──────────────────────────────
+function EntryOptionsSheet({ onClose, onSelectPatient, onSelectCareerStop }) {
+  return (
+    <>
+      <div className="sheet-overlay" onClick={onClose} />
+      <div className="sheet-container">
+        <div className="sheet-handle" />
+        <div className="sheet-title">Ne eklemek istersiniz?</div>
+        <div className="entry-options">
+          <button className="entry-option" onClick={onSelectPatient}>
+            <Icons.Users />
+            <span className="entry-option-label">Hasta Sayısı</span>
+          </button>
+          <button className="entry-option" onClick={onSelectCareerStop}>
+            <Icons.Building />
+            <span className="entry-option-label">Görev Yeri</span>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── PROFILE EDIT SHEET ───────────────────────────────
+function ProfileEditSheet({ onClose }) {
+  const { data, setData } = useApp();
+  const [profileName, setProfileName] = useState(data.physician.name);
+  const [profileTitle, setProfileTitle] = useState(data.physician.title);
+  const [stops, setStops] = useState([...data.careerStops]);
+  const [toast, setToast] = useState(false);
+
+  function handleSave() {
+    const newData = {
+      ...data,
+      physician: { ...data.physician, name: profileName, title: profileTitle },
+      careerStops: stops,
+    };
+    setData(newData);
+    saveData(newData);
+    setToast(true);
+    setTimeout(onClose, 800);
+  }
+
+  function updateStop(id, field, value) {
+    setStops(stops.map(s => s.id === id ? { ...s, [field]: value } : s));
+  }
+
+  return (
+    <>
+      <div className="sheet-overlay" onClick={onClose} />
+      <div className="sheet-container" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
+        <div className="sheet-handle" />
+        <div className="sheet-title">Profili Düzenle</div>
+        
+        <div className="form-group">
+          <label className="form-label">İsim</label>
+          <input className="form-input" value={profileName} onChange={e => setProfileName(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Unvan</label>
+          <input className="form-input" value={profileTitle} onChange={e => setProfileTitle(e.target.value)} />
+        </div>
+
+        <div className="sheet-title" style={{ marginTop: 24, fontSize: '1rem' }}>Kariyer Durakları</div>
+        <div className="career-stop-list">
+          {stops.map((stop) => (
+            <div key={stop.id} className="career-stop-item" style={{ padding: '12px' }}>
+              <div className="form-group" style={{ marginBottom: 8 }}>
+                <label className="form-label">Kurum</label>
+                <input className="form-input" value={stop.institution} onChange={e => updateStop(stop.id, 'institution', e.target.value)} />
+              </div>
+              <div className="form-row" style={{ marginBottom: 8 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Bölüm</label>
+                  <input className="form-input" value={stop.department || ''} onChange={e => updateStop(stop.id, 'department', e.target.value)} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Pozisyon</label>
+                  <input className="form-input" value={stop.role} onChange={e => updateStop(stop.id, 'role', e.target.value)} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Başlangıç</label>
+                  <input className="form-input" type="date" value={stop.startDate} onChange={e => updateStop(stop.id, 'startDate', e.target.value)} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Bitiş</label>
+                  <input className="form-input" type="date" value={stop.endDate || ''} onChange={e => updateStop(stop.id, 'endDate', e.target.value || null)} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button className="btn-primary" style={{ marginTop: 16 }} onClick={handleSave}>Değişiklikleri Kaydet</button>
+      </div>
+      <Toast message="Değişiklikler kaydedildi ✓" show={toast} onHide={() => setToast(false)} />
+    </>
+  );
+}
+
+// ─── SETTINGS PAGE ────────────────────────────────────
+function SettingsPage({ onEditProfile }) {
+  const { data, setData } = useApp();
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '' });
+  const fileInputRef = useRef(null);
+
+  function handleExport() {
+    const json = exportData();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `asklepion_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setToast({ show: true, message: 'Veriler dışa aktarıldı ✓' });
+  }
+
+  function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = importDataFromJSON(ev.target.result);
+      if (result) {
+        setData(result);
+        setToast({ show: true, message: 'Veriler içe aktarıldı ✓' });
+      } else {
+        setToast({ show: true, message: 'Geçersiz dosya formatı ✗' });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  function handleReset() {
+    const defaultData = getDefaultData();
+    setData(defaultData);
+    saveData(defaultData);
+    setShowResetConfirm(false);
+    setToast({ show: true, message: 'Veriler sıfırlandı' });
+  }
+
+  const nameUpper = (data.physician.name || '').toUpperCase();
+  const initials = nameUpper.startsWith('DR')
+    ? 'DR'
+    : nameUpper
+        .split(' ')
+        .filter(w => w.length > 0)
+        .map(w => w[0])
+        .join('')
+        .slice(0, 2);
+
+  return (
+    <div className="settings-page">
+      <div className="settings-page-title">Ayarlar</div>
+
+      <div className="profile-card">
+        <div className="profile-avatar">{initials || '?'}</div>
+        <div className="profile-info">
+          <div className="profile-name">{data.physician.name || 'İsim belirtilmedi'}</div>
+          <div className="profile-role">{data.physician.title || 'Hekim'}</div>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <div className="settings-section-title">Profil ve Kariyer</div>
+        <div className="settings-card">
+          <div className="settings-item" onClick={onEditProfile}>
+            <div className="settings-item-left">
+              <div className="settings-item-icon gold">
+                <Icons.Edit />
+              </div>
+              <div className="settings-item-text">
+                <div className="settings-item-title">Düzenle</div>
+                <div className="settings-item-desc">Bilgileri ve durakları yönet</div>
+              </div>
+            </div>
+            <div className="settings-item-right"><Icons.ChevronRight /></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <div className="settings-section-title">Veri Yönetimi</div>
+        <div className="settings-card">
+          <div className="settings-item" onClick={handleExport}>
+            <div className="settings-item-left">
+              <div className="settings-item-icon gold">
+                <Icons.Download />
+              </div>
+              <div className="settings-item-text">
+                <div className="settings-item-title">Verileri Dışa Aktar</div>
+                <div className="settings-item-desc">JSON dosyası olarak indir</div>
+              </div>
+            </div>
+            <div className="settings-item-right"><Icons.ChevronRight /></div>
+          </div>
+
+          <div className="settings-item" onClick={() => fileInputRef.current?.click()}>
+            <div className="settings-item-left">
+              <div className="settings-item-icon gold">
+                <Icons.Upload />
+              </div>
+              <div className="settings-item-text">
+                <div className="settings-item-title">Verileri İçe Aktar</div>
+                <div className="settings-item-desc">JSON dosyasından yükle</div>
+              </div>
+            </div>
+            <div className="settings-item-right"><Icons.ChevronRight /></div>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: 'none' }}
+            onChange={handleImport}
+          />
+
+          <div className="settings-item" onClick={() => setShowResetConfirm(true)}>
+            <div className="settings-item-left">
+              <div className="settings-item-icon danger">
+                <Icons.Trash />
+              </div>
+              <div className="settings-item-text">
+                <div className="settings-item-title">Tüm Verileri Sıfırla</div>
+                <div className="settings-item-desc">Tüm veriler kalıcı olarak silinir</div>
+              </div>
+            </div>
+            <div className="settings-item-right"><Icons.ChevronRight /></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <div className="settings-section-title">Uygulama</div>
+        <div className="settings-card">
+          <div className="settings-item">
+            <div className="settings-item-left">
+              <div className="settings-item-icon">
+                <Icons.Info />
+              </div>
+              <div className="settings-item-text">
+                <div className="settings-item-title">Hakkında</div>
+                <div className="settings-item-desc">Asklepion v1.0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="app-info">
+        <Icons.Logo size={32} />
+        <div style={{ marginTop: 8 }}>
+          <strong style={{ color: 'var(--gold-400)' }}>Asklepion</strong>
+        </div>
+        <div>Hekim Kariyer Günlüğü</div>
+        <div className="app-version">v1.0.0 • Local-First</div>
+      </div>
+
+      <ConfirmDialog
+        show={showResetConfirm}
+        title="Tüm Verileri Sıfırla"
+        description="Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecektir. Devam etmek istediğinizden emin misiniz?"
+        confirmText="Sıfırla"
+        danger={true}
+        onConfirm={handleReset}
+        onCancel={() => setShowResetConfirm(false)}
+      />
+
+      <Toast
+        message={toast.message}
+        show={toast.show}
+        onHide={() => setToast({ ...toast, show: false })}
+      />
+    </div>
+  );
+}
+
+// ─── BOTTOM NAV ───────────────────────────────────────
+function BottomNav({ activeTab, onTabChange }) {
+  const tabs = [
+    { id: 'dashboard', label: 'Anasayfa', icon: Icons.Home },
+    { id: 'career', label: 'Kariyer', icon: Icons.Chart },
+    { id: 'settings', label: 'Ayarlar', icon: Icons.Settings },
+  ];
+
+  return (
+    <nav className="bottom-nav">
+      {tabs.map(tab => (
+        <button
+          key={tab.id}
+          className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
+          onClick={() => onTabChange(tab.id)}
+        >
+          <tab.icon />
+          <span className="nav-item-label">{tab.label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────
+function App() {
+  const [data, setData] = useState(loadData);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [sheet, setSheet] = useState(null); // null | 'options' | 'patient' | 'careerStop'
+
+  const contextValue = useMemo(() => ({ data, setData }), [data]);
+
+  // Redirect to onboarding if not complete
+  if (!data.onboardingComplete) {
+    return (
+      <AppContext.Provider value={contextValue}>
+        <OnboardingWizard />
+      </AppContext.Provider>
+    );
+  }
+
+  const renderPage = () => {
+    switch (activeTab) {
+      case 'dashboard': return <Dashboard />;
+      case 'career': return <CareerPage />;
+      case 'settings': return <SettingsPage onEditProfile={() => setSheet('profileEdit')} />;
+      default: return <Dashboard />;
+    }
+  };
+
+  return (
+    <AppContext.Provider value={contextValue}>
+      <div className="app-layout">
+        {renderPage()}
+
+        {/* FAB — only on dashboard and career */}
+        {(activeTab === 'dashboard' || activeTab === 'career') && (
+          <button className="fab" onClick={() => setSheet('options')}>
+            <Icons.Plus />
+          </button>
+        )}
+
+        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+
+        {/* Sheets */}
+        {sheet === 'options' && (
+          <EntryOptionsSheet
+            onClose={() => setSheet(null)}
+            onSelectPatient={() => setSheet('patient')}
+            onSelectCareerStop={() => setSheet('careerStop')}
+          />
+        )}
+        {sheet === 'patient' && (
+          <PatientEntrySheet onClose={() => setSheet(null)} />
+        )}
+        {sheet === 'careerStop' && (
+          <CareerStopSheet onClose={() => setSheet(null)} />
+        )}
+        {sheet === 'profileEdit' && (
+          <ProfileEditSheet onClose={() => setSheet(null)} />
+        )}
+      </div>
+    </AppContext.Provider>
+  );
+}
+
+// ─── MOUNT ────────────────────────────────────────────
+const root = ReactDOM.createRoot(document.getElementById('app'));
+root.render(<App />);
+
+</script>
+</body>
+</html>
+
