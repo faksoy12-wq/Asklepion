@@ -1495,9 +1495,13 @@ button {
 .text-emerald { color: #10b981; }
 
 .stats-page {
-  padding: var(--space-xl) var(--space-base) var(--space-base);
+  padding: var(--space-xl) var(--space-base) calc(var(--space-base) + 100px);
   max-width: var(--max-width);
+  width: 100%;
   margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -1596,7 +1600,7 @@ button {
 .stats-card-icon {
   width: 28px;
   height: 28px;
-  color: var(--text-tertiary);
+  color: var(--gold-400);
   margin-bottom: var(--space-sm);
 }
 
@@ -1610,7 +1614,7 @@ button {
   font-family: var(--font-display);
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--text-tertiary);
+  color: var(--gold-400);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: var(--space-lg);
@@ -1744,8 +1748,9 @@ button {
   border-top: 1px solid var(--border-subtle);
   font-size: 0.75rem;
   font-style: italic;
-  color: var(--text-tertiary);
-  opacity: 0.6;
+  color: var(--gold-400);
+  font-weight: 500;
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
   text-align: center;
   line-height: 1.5;
 }
