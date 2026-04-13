@@ -1770,25 +1770,25 @@ function StatsPage() {
 
       {/* ─── KART 1: ZAMANIN SİMYASI ─── */}
       <div className="stats-hero-card">
-        <div className="stats-card-glow stats-glow-emerald" />
+        <div className="stats-card-glow stats-glow-gold" />
         <div className="stats-card-icon"><Icons.Timer /></div>
         <div className="stats-card-section-title">Zamanın Simyası</div>
 
         <div className="stats-hero-metrics">
           <div className="stats-metric-big">
-            <span className="stats-metric-number emerald"><NumberTicker value={totalHours} /></span>
+            <span className="stats-metric-number gold">{totalHours.toLocaleString('tr-TR')}</span>
             <span className="stats-metric-unit">saat</span>
           </div>
         </div>
 
         <p className="stats-narrative">
-          Klinik pratiğinizde toplamda <strong className="text-emerald">{totalHours.toLocaleString('tr-TR')} saat</strong> boyunca
+          Klinik pratiğinizde toplamda <strong className="text-gold">{totalHours.toLocaleString('tr-TR')} saat</strong> boyunca
           kesintisiz şifa dağıttınız. Bu, ömrünüzün <strong className="text-gold">{totalDays} gününü</strong> sadece
           başkalarının sağlığına adadığınız anlamına geliyor.
         </p>
 
         <p className="stats-narrative" style={{ marginTop: 'var(--space-md)' }}>
-          Hastalarınızı <strong className="text-emerald">{totalHours.toLocaleString('tr-TR')} saat</strong> boyunca
+          Hastalarınızı <strong className="text-gold">{totalHours.toLocaleString('tr-TR')} saat</strong> boyunca
           can kulağıyla dinlediniz. Bu süre, <strong className="text-gold">{filmCount.toLocaleString('tr-TR')} uzun metrajlı film</strong> izlemeye
           veya dünyayı uçakla <strong className="text-gold">{worldTours} kez</strong> turlamaya eşdeğer.
         </p>
@@ -1837,11 +1837,6 @@ function StatsPage() {
         <div className="stats-comparison-badge">
           <Icons.MapPin />
           <span>Sadece bu adımlarla İstanbul'un bir ucundan diğerine <strong>{istanbulRoundTrips} kez</strong> gidip gelebilirdiniz.</span>
-        </div>
-
-        <div className="stats-sparkline-row">
-          <MiniSparkline data={last6Months} color="#D4AF37" />
-          <span className="stats-sparkline-label">Son 6 ay trendi</span>
         </div>
 
         <div className="stats-quote">
@@ -1914,11 +1909,6 @@ function StatsPage() {
               <div className="stats-evo-sub">{MONTHS_TR[new Date().getMonth()]} ayı kıyası</div>
             </div>
           )}
-        </div>
-
-        <div className="stats-sparkline-row" style={{ marginTop: 'var(--space-lg)' }}>
-          <MiniSparkline data={last6Months} color="#10b981" height={50} />
-          <span className="stats-sparkline-label">6 aylık trend</span>
         </div>
 
         <div className="stats-quote">
