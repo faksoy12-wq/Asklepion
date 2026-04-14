@@ -1132,7 +1132,8 @@ function PatientEntrySheet({ onClose }) {
   const [count, setCount] = useState('');
   const [toast, setToast] = useState(false);
 
-  const activeStop = data.careerStops.find(s => !s.endDate);
+  // GÜNCELLEME 1: Çökme önleyici fallback mantığı eklendi
+  const activeStop = data.careerStops.find(s => !s.endDate) || data.careerStops[data.careerStops.length - 1];
 
   const targetStop = useMemo(() => {
     const key = `${year}-${month.padStart(2, '0')}`;
@@ -1166,6 +1167,18 @@ function PatientEntrySheet({ onClose }) {
     setTimeout(() => {
       setToast(false);
     }, 1500);
+
+    // GÜNCELLEME 2: Seri Giriş UX - Temizle ve bir sonraki aya otomatik geç
+    setCount('');
+    const m = parseInt(month);
+    let nextMonth = m + 1;
+    let nextYear = parseInt(year);
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      nextYear += 1;
+    }
+    setMonth(String(nextMonth));
+    setYear(String(nextYear));
   }
 
   const currentYear = new Date().getFullYear();
@@ -1226,6 +1239,9 @@ function PatientEntrySheet({ onClose }) {
             placeholder="Örn: 450"
             value={count}
             onChange={e => setCount(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') handleSave(); // GÜNCELLEME 3: Enter Tuşu
+            }}
             autoFocus
             style={{ fontSize: '1.5rem', fontWeight: 700, textAlign: 'center', fontFamily: 'var(--font-display)' }}
           />
