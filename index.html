@@ -30,6 +30,11 @@
    Premium SPA • Mobile-First • Local-First
    ============================================= */
 
+window.onerror = function(msg, source, lineno, colno, error) {
+  document.body.innerHTML = '<div style="padding: 20px; color: red;"><h1>Kritik Bir Hata Oluştu!</h1><p>' + msg + '</p><pre>' + (error && error.stack ? error.stack : '') + '</pre><p>Satır: ' + lineno + '</p></div>';
+  return false;
+};
+
 const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
 const {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -326,7 +331,16 @@ function getDefaultData() {
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const defaultD = getDefaultData();
+      return {
+        ...defaultD,
+        ...parsed,
+        physician: { ...defaultD.physician, ...(parsed.physician || {}) },
+        careerStops: parsed.careerStops || []
+      };
+    }
   } catch (e) { console.error('Storage read error:', e); }
   return getDefaultData();
 }
@@ -2143,8 +2157,31 @@ function App() {
 }
 
 // ─── MOUNT ────────────────────────────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div style={{padding: '20px', color: 'red'}}>
+        <h1>Bir hata oluştu.</h1>
+        <pre>{this.state.error && this.state.error.toString()}</pre>
+        <button onClick={() => { localStorage.clear(); window.location.reload(); }}>Verileri Sıfırla ve Yenile</button>
+      </div>;
+    }
+    return this.props.children;
+  }
+}
+
 const root = ReactDOM.createRoot(document.getElementById('app'));
-root.render(<App />);
+root.render(<ErrorBoundary><App /></ErrorBoundary>);
 
 </script>
 </body>
