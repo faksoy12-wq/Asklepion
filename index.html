@@ -24,16 +24,22 @@
     <script src="https://unpkg.com/prop-types@15.8.1/prop-types.js"></script>
     <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+      window.onerror = function(msg, source, lineno, colno, error) {
+        document.body.innerHTML = '<div style="padding: 20px; color: red; background: white; position: absolute; z-index: 9999; top: 0; left: 0; width: 100%;"><h1>Kritik Hata (Window)</h1><p>' + msg + '</p></div>';
+        return false;
+      };
+      const originalConsoleError = console.error;
+      console.error = function(...args) {
+        document.body.innerHTML += '<div style="padding: 20px; color: red; background: white; position: absolute; z-index: 9999; top: 150px; left: 0; width: 100%;"><h1>Kritik Hata (Babel/Console)</h1><p>' + args.join(' ') + '</p></div>';
+        originalConsoleError.apply(console, args);
+      };
+    </script>
     <script type="text/babel" data-presets="env,react">
 /* =============================================
    ASKLEPION — Profesyonel Hekim Kariyer Defteri
    Premium SPA • Mobile-First • Local-First
    ============================================= */
-
-window.onerror = function(msg, source, lineno, colno, error) {
-  document.body.innerHTML = '<div style="padding: 20px; color: red;"><h1>Kritik Bir Hata Oluştu!</h1><p>' + msg + '</p><pre>' + (error && error.stack ? error.stack : '') + '</pre><p>Satır: ' + lineno + '</p></div>';
-  return false;
-};
 
 const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
 const {
