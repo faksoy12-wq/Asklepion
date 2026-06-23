@@ -24,7 +24,7 @@
     <script src="https://unpkg.com/prop-types@15.8.1/prop-types.js"></script>
     <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script type="text/babel">
+    <script type="text/babel" data-presets="env,react">
 /* =============================================
    ASKLEPION — Profesyonel Hekim Kariyer Defteri
    Premium SPA • Mobile-First • Local-First
@@ -1187,7 +1187,7 @@ function PatientEntrySheet({ onClose }) {
   for (let y = 2050; y >= startYear; y--) years.push(y);
 
   const existingKey = `${year}-${month.padStart(2, '0')}`;
-  const existingValue = targetStop?.monthlyPatients?.[existingKey];
+  const existingValue = targetStop && targetStop.monthlyPatients ? targetStop.monthlyPatients[existingKey] : undefined;
 
   return (
     <>
@@ -1593,7 +1593,7 @@ function SettingsPage({ onEditProfile }) {
             <div className="settings-item-right"><Icons.ChevronRight /></div>
           </div>
 
-          <div className="settings-item" onClick={() => fileInputRef.current?.click()}>
+          <div className="settings-item" onClick={() => fileInputRef.current && fileInputRef.current.click()}>
             <div className="settings-item-left">
               <div className="settings-item-icon gold">
                 <Icons.Upload />
@@ -1758,7 +1758,7 @@ function StatsPage() {
     return months.map(key => {
       let total = 0;
       data.careerStops.forEach(stop => {
-        total += Number(stop.monthlyPatients?.[key]) || 0;
+        total += Number(stop.monthlyPatients && stop.monthlyPatients[key]) || 0;
       });
       return total;
     });
@@ -1829,8 +1829,8 @@ function StatsPage() {
 
     let currentVal = 0, lastYearVal = 0;
     data.careerStops.forEach(stop => {
-      currentVal += Number(stop.monthlyPatients?.[currentKey]) || 0;
-      lastYearVal += Number(stop.monthlyPatients?.[lastYearKey]) || 0;
+      currentVal += Number(stop.monthlyPatients && stop.monthlyPatients[currentKey]) || 0;
+      lastYearVal += Number(stop.monthlyPatients && stop.monthlyPatients[lastYearKey]) || 0;
     });
 
     const diff = lastYearVal > 0 ? Math.round(((currentVal - lastYearVal) / lastYearVal) * 100) : null;
