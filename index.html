@@ -18,12 +18,22 @@
 </head>
 <body>
     <div id="app"></div>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/react-is@18/umd/react-is.development.js"></script>
-    <script src="https://unpkg.com/prop-types@15.8.1/prop-types.js"></script>
-    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/react-is@18/umd/react-is.development.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/prop-types@15.8.1/prop-types.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+      // Force classic JSX runtime to prevent "Cannot use import statement outside a module"
+      if (window.Babel) {
+        Babel.registerPreset('react-classic', {
+          presets: [
+            [Babel.availablePresets.react, { runtime: 'classic' }]
+          ]
+        });
+      }
+    </script>
     <script>
       window.onerror = function(msg, source, lineno, colno, error) {
         document.body.innerHTML = '<div style="padding: 20px; color: red; background: white; position: absolute; z-index: 9999; top: 0; left: 0; width: 100%;"><h1>Kritik Hata (Window)</h1><p>' + msg + '</p></div>';
@@ -35,9 +45,7 @@
         originalConsoleError.apply(console, args);
       };
     </script>
-    <script type="text/babel" data-presets="react">
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+    <script type="text/babel" data-presets="react-classic">
 /* =============================================
    ASKLEPION — Profesyonel Hekim Kariyer Defteri
    Premium SPA • Mobile-First • Local-First
